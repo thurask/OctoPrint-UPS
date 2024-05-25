@@ -1,2 +1,2 @@
 OctoPrint
-nut2
+PyNUTClient
