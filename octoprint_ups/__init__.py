@@ -10,7 +10,7 @@ from octoprint.events import Events
 import time
 import threading
 from flask import make_response, jsonify
-import nut2
+import PyNUTClient.PyNUT as nut2
 
 try:
     from octoprint.access.permissions import Permissions
@@ -87,6 +87,7 @@ class UPS(octoprint.plugin.StartupPlugin,
         try:
             self.ups = self.connect(self.config["host"], self.config["port"], self.config["auth"], self.config["username"], self.config["password"])
             self.ups.ver()
+            self.ups.DeviceLogin(self.config["ups"])
             self._logger.info("Connected!")
             return True
         except Exception:
@@ -129,7 +130,7 @@ class UPS(octoprint.plugin.StartupPlugin,
                     logged_not_connected = False
 
             try:
-                vars = self.ups.list_vars(ups=self.config['ups'])
+                vars = self.ups.GetUPSVars(ups=self.config['ups'])
             except nut2.PyNUTError as e:
                 msg = str(e)
                 if msg == "ERR DATA-STALE":
@@ -147,6 +148,11 @@ class UPS(octoprint.plugin.StartupPlugin,
             except Exception:
                 self._logger.exception("An exception occurred while getting vars info")
                 continue
+
+            # bytes are annoying
+            _vars = {key.decode('utf-8'): val.decode('utf-8') for key, val in vars.items()}
+            vars = _vars
+            del _vars
 
             self._logger.debug(vars)
 
@@ -233,8 +239,8 @@ class UPS(octoprint.plugin.StartupPlugin,
             try:
                 ups = self.connect(host=str(data['host']), port=int(data['port']),
                                    auth=data["auth"], username=data["username"], password=data["password"])
-                res = ups.list_ups()
-                return jsonify(result=list(res.keys()))
+                res = ups.GetUPSNames()
+                return jsonify(result=res)
             except:
                 return make_response("Error getting UPS list", 500)
 
@@ -275,7 +281,7 @@ class UPS(octoprint.plugin.StartupPlugin,
             "js": ["js/ups.js"],
             "less": ["less/ups.less"],
             "css": ["css/ups.min.css"]
-        } 
+        }
 
 
     def get_update_information(self):
