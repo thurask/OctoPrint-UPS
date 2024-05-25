@@ -93,15 +93,15 @@ $(function() {
                 status_text = "Offline";
             }
 
-            content += "<td>Status</td><td>" + status_text + "</td></tr>"
+            content += "<tr><td>Status</td><td>" + status_text + "</td></tr>"
 
             if (status_text != "Offline") {
                 if (self.vars().hasOwnProperty('battery.charge')) {
-                    content += "<td>Charge</td><td>" + parseInt(self.vars()["battery.charge"]) + "%</td></tr>"
+                    content += "<tr><td>Charge</td><td>" + parseInt(self.vars()["battery.charge"]) + "%</td></tr>"
                 }
 
                 if (self.vars().hasOwnProperty('battery.runtime')) {
-                    content += "<td>Runtime</td><td>" + parseInt(self.vars()["battery.runtime"]) / 60 + " min</td></tr>"
+                    content += "<tr><td>Runtime</td><td>" + parseInt(self.vars()["battery.runtime"]) / 60 + " min</td></tr>"
                 }
             }
 /*
@@ -134,15 +134,18 @@ $(function() {
             }).done(function(data) {
                 console.log(data);
                 self.available_upses(data.result);
+            }).fail(function(data) {
+                console.warn("Failed fetching UPS list. Falling back to config value.");
+                alert("Unable to fetch UPS list.");
+
+                self.available_upses([self.settings.plugins.ups.ups()]);
             });
         };
 
         self.onBeforeBinding = function() {
             self.settings = self.settingsViewModel.settings;
-        };
 
-        self.onSettingsShown = function () {
-            self.updateUPSList();
+            self.available_upses([self.settings.plugins.ups.ups()]);
         };
 
         self.onDataUpdaterPluginMessage = function(plugin, data) {

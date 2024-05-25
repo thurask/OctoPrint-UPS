@@ -81,7 +81,7 @@ class UPS(octoprint.plugin.StartupPlugin,
                 return True
             except (NameError, AttributeError):
                 pass
-            except (EOFError, BrokenPipeError):
+            except (EOFError, BrokenPipeError, ConnectionAbortedError):
                 self._logger.warning("Connection lost. Reconnecting...")
 
         try:
@@ -236,7 +236,6 @@ class UPS(octoprint.plugin.StartupPlugin,
                 res = ups.list_ups()
                 return jsonify(result=list(res.keys()))
             except:
-                # TODO: Can be done diff? idk?
                 return make_response("Error getting UPS list", 500)
 
 
