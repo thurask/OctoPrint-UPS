@@ -10,7 +10,7 @@ from octoprint.events import Events
 import time
 import threading
 from flask import make_response, jsonify
-import PyNUTClient.PyNUT as nut2
+from PyNUTClient import PyNUT
 
 try:
     from octoprint.access.permissions import Permissions
@@ -102,7 +102,7 @@ class UPS(octoprint.plugin.StartupPlugin,
         if not auth or password == "":
             password = None
 
-        return nut2.PyNUTClient(host=host, port=port, login=username, password=password)
+        return PyNUT.PyNUTClient(host=host, port=port, login=username, password=password)
 
 
     def _loop(self):
@@ -131,7 +131,7 @@ class UPS(octoprint.plugin.StartupPlugin,
 
             try:
                 vars = self.ups.GetUPSVars(ups=self.config['ups'])
-            except nut2.PyNUTError as e:
+            except PyNUT.PyNUTError as e:
                 msg = str(e)
                 if msg == "ERR DATA-STALE":
                     # Basically seems like an unable to fetch / refresh data error.
